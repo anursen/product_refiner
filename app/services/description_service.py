@@ -12,6 +12,7 @@ class DescriptionService:
     SYSTEM_PROMPT = """You are a professional product description writer and editor. Your task is to:
     1. Rewrite the product description given to you as if you are the seller, following the seller's persona.
     2. Improve the clarity and readability of product descriptions.
+    3. Include seller information to the listing.
     3. Ensure proper grammar and punctuation.
     4. Optimize for SEO while maintaining natural language.
     5. Highlight key product features and benefits.
@@ -36,9 +37,12 @@ class DescriptionService:
             # Build the input message
             seller_persona = f"This description is aimed at {request.seller_persona}." if request.seller_persona else ""
             item_condition = f"The item is {request.item_condition}." if request.item_condition else ""
+            seller_address = f"The seller is located in {request.seller_address}." if request.seller_address else ""
             description = f"{request.description.strip()}"
+            
 
-            input_message = f"{seller_persona} {item_condition} {description}"
+
+            input_message = f"{seller_persona} {item_condition} {description} {seller_address}"
 
             graph_builder = StateGraph(State)
 
@@ -56,10 +60,11 @@ class DescriptionService:
             graph = graph_builder.compile()
             result = await graph.ainvoke({"messages": [input_message]})
             refined_description = result["messages"][0]
-
+            refined_title = "Refined Product Title"  # Placeholder for actual refined title
             return DescriptionResponse(
                 seller_persona=request.seller_persona,
-                refined_description=refined_description
+                refined_description=refined_description,
+                refined_title=refined_title
             )
         except Exception as e:
             print(f"Error in LLM processing: {str(e)}")
