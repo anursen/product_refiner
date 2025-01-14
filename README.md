@@ -1,15 +1,22 @@
 # Product Description Refiner API
 
-A FastAPI-based service that refines product descriptions using AI language models.
+A FastAPI-based service that refines product descriptions using AI language models and OpenAI's GPT-4.
 
 ## Features
 
-- Refine product descriptions using GPT-4
-- Customize output based on seller persona
-- Support for different item conditions
-- Adjustable creativity with temperature control
+- AI-powered product description refinement
+- Smart title generation
+- Seller persona customization
+- Location-aware descriptions
+- Condition-specific formatting
+- Adjustable creativity settings
 - SEO optimization
 - Grammar and readability improvements
+
+## Prerequisites
+
+- Python 3.8+
+- OpenAI API key
 
 ## Installation
 
@@ -24,6 +31,16 @@ source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Set up environment variables
+echo "OPENAI_API_KEY=your-api-key-here" > .env
+```
+
+## Configuration
+
+Create a `.env` file in the root directory and add your OpenAI API key:
+```
+OPENAI_API_KEY=your-api-key-here
 ```
 
 ## Usage
@@ -40,44 +57,60 @@ python run.py
 curl -X POST "http://127.0.0.1:8000/refine/" \
 -H "Content-Type: application/json" \
 -d '{
-  "description": "Sample product description",
+  "description": "iPhone 13 Pro 256GB in perfect condition",
   "seller_persona": "tech-savvy individual",
+  "seller_address": "Somerset, NJ",
   "item_condition": "new",
   "temperature": 0.7
 }'
 ```
 
-## API Endpoints
+## API Documentation
 
 ### POST /refine/
 
-Refines a product description.
+Refines a product description and generates a title.
 
-**Request Body:**
+**Request Body Schema:**
 ```json
 {
-  "description": "string",
+  "description": "string (required)",
   "seller_persona": "string (optional)",
-  "item_condition": "string (optional)",
-  "temperature": "float (optional, default: 0.7)"
+  "seller_address": "string (optional)",
+  "item_condition": "string (optional: new|used|refurbished)",
+  "temperature": "float (optional, range: 0.0-1.0, default: 0.7)"
 }
 ```
 
-**Response:**
+**Response Schema:**
 ```json
 {
+  "refined_description": "string",
+  "refined_title": "string",
   "seller_persona": "string",
-  "refined_description": "string"
+  "item_condition": "string"
 }
 ```
 
 ## Development
 
-- Built with FastAPI
-- Uses LangChain for LLM integration
-- Implements async processing with LangGraph
-- Pydantic models for request/response validation
+- Framework: FastAPI
+- LLM Integration: LangChain
+- Models: GPT-4
+- Validation: Pydantic v2
+
+## Error Handling
+
+The API includes comprehensive error handling for:
+- Invalid input validation
+- Missing API keys
+- LLM service interruptions
+- Rate limiting
 
 ## License
 
 MIT License
+
+## Support
+
+For issues and feature requests, please open an issue on the repository.
