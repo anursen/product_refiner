@@ -7,9 +7,8 @@ class DescriptionRequest(BaseModel):
         min_length=1,
         description="The original product description to be refined"
     )
-    seller_address: str = Field(
-        ...,
-        min_length=1,
+    seller_address: Optional[str] = Field(
+        default=None,
         description="The location of the seller"
     )
     seller_persona: Optional[str] = Field(
@@ -45,17 +44,22 @@ class DescriptionRequest(BaseModel):
         }
 
 class DescriptionResponse(BaseModel):
-    seller_persona: Optional[str] = Field(
-        default=None,
-        description="The persona used for refinement"
-    )
     refined_description: str = Field(
         ...,
         description="The AI-refined product description"
     )
-    refined_title: str = Field(
-        ...,
-        description="The AI-generated product title"
+    refined_title: Optional[str] = Field(
+        default=None,
+        description="The AI-generated product title",
+        max_length=99
+    )
+    seller_persona: Optional[str] = Field(
+        default=None,
+        description="The persona used for refinement"
+    )
+    item_condition: Optional[str] = Field(
+        default=None,
+        description="The condition of the item (new, used, refurbished)"
     )
 
     class Config:
@@ -63,6 +67,8 @@ class DescriptionResponse(BaseModel):
             "example": {
                 "seller_persona": "tech-savvy individual",
                 "refined_description": "This is a refined description of the product.",
-                "refined_title": "Refined Product Title"
+                "refined_title": "Refined Product Title",
+                "item_condition": "new"
             }
         }
+

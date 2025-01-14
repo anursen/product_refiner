@@ -1,7 +1,6 @@
-from typing import TypedDict, List, Optional
-from langgraph.graph import StateGraph, START, END
+from typing import TypedDict, List
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import SystemMessage
 from app.schemas.description_schema import (DescriptionRequest, 
                                             DescriptionResponse)
 
@@ -27,70 +26,37 @@ class DescriptionService:
         """
         Refines the product description using LLM.
         """
-        try:
-            # Ensure request is a DescriptionRequest object
-            if isinstance(request, dict):
+        
+        # Ensure request is a DescriptionRequest object
+        if isinstance(request, dict):
                 request = DescriptionRequest(**request)
             
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=float(request.temperature or 0.7))
-
-            # Build the input message
-            seller_persona = f"This description is aimed at {request.seller_persona}." if request.seller_persona else ""
-            item_condition = f"The item is {request.item_condition}." if request.item_condition else ""
-            seller_address = f"The seller is located in {request.seller_address}." if request.seller_address else ""
-            description = f"{request.description.strip()}"
-            
-
-
-            input_message = f"{seller_persona} {item_condition} {description} {seller_address}"
-
-            graph_builder = StateGraph(State)
-
-            async def chatbot(state: State):
-                messages = [
-                    SystemMessage(content=DescriptionService.SYSTEM_PROMPT)
-                ] + [HumanMessage(content=msg) for msg in state["messages"]]
-                result = await llm.ainvoke(messages)
-                return {"messages": [result.content]}
-            
-            graph_builder.add_node("chatbot", chatbot)
-            graph_builder.add_edge(START, "chatbot")
-            graph_builder.add_edge("chatbot", END)
-            
-            graph = graph_builder.compile()
-            result = await graph.ainvoke({"messages": [input_message]})
-            refined_description = result["messages"][0]
-            refined_title = "Refined Product Title"  # Placeholder for actual refined title
-            return DescriptionResponse(
-                seller_persona=request.seller_persona,
-                refined_description=refined_description,
-                refined_title=refined_title
-            )
-        except Exception as e:
-            print(f"Error in LLM processing: {str(e)}")
-            if isinstance(request, str):
-                return DescriptionResponse(
-                    seller_persona=None,
-                    refined_description=request
-                )
-            return DescriptionResponse(
-                seller_persona=request.seller_persona if hasattr(request, 'seller_persona') else None,
-                refined_description=request.description if hasattr(request, 'description') else str(request)
-            )
+        llm = ChatOpenAI(model="gpt-4", temperature=float(request.temperature or 0.7))
+        # Build the input message
+        seller_persona = f"This description is aimed at {request.seller_persona}." if request.seller_persona else ""
+        item_condition = f"The item is {request.item_condition}." if request.item_condition else ""
+        seller_address = f"The seller is located in {request.seller_address}." if request.seller_address else ""
+        description = f"{request.description.strip()}"
+        prompt_template = f"""
+        {DescriptionService.SYSTEM_PROMPT}
         
+        
+        Product Information:
+        - Description: {description}
+        - Seller: {seller_persona}
+        - Condition: {item_condition}
+        - Location: {seller_address}
+        """
 
-    @staticmethod
-    def clean_text(text: str) -> str:
-        """
-        Cleans and sanitizes input text.
-        """
-        # Implement text cleaning logic
-        pass
-
-    @staticmethod
-    def enhance_seo(text: str) -> str:
-        """
-        Enhances text for SEO purposes.
-        """
-        # Implement SEO enhancement logic
-        pass
+        messages = [SystemMessage(content=prompt_template)]
+        output = await llm.ainvoke(messages)
+        
+        # Extract the content from the AIMessage
+        refined_description = output.content if hasattr(output, 'content') else str(output)
+        
+        return DescriptionResponse(
+            refined_description=refined_description,  
+            refined_title=f"Refined {request.item_condition} Product", 
+            seller_persona=request.seller_persona,
+            item_condition=request.item_condition
+        )
