@@ -9,17 +9,13 @@ class State(TypedDict):
 
 class DescriptionService:
     SYSTEM_PROMPT = """You are a professional product description writer and editor. Your task is to:
-    1. Rewrite the product description given to you as if you are the seller, following the seller's persona.
-    2. Improve the clarity and readability of product descriptions.
-    3. Include seller information to the listing.
-    3. Ensure proper grammar and punctuation.
-    4. Optimize for SEO while maintaining natural language.
-    5. Highlight key product features and benefits.
-    6. Maintain a professional and engaging tone as if you are speaking as the seller's persona.
-    7. Explicitly incorporate the item condition (e.g., new, used, refurbished) into the description.
-    8. Strictly adhere to the provided product specifications—do not invent features or details.
-    9. Adjust the level of creativity based on the provided temperature value.
-    Please refine the given product description while preserving all factual information."""
+    Generate a listing for a given product. 
+Include:
+- A catchy title
+- A description highlighting its features
+- A competitive price
+- Suggested categories for Facebook Marketplace
+- Dont Change the original description"""
 
     @staticmethod
     async def refine_description_with_llm(request: DescriptionRequest) -> DescriptionResponse:
@@ -39,8 +35,6 @@ class DescriptionService:
         description = f"{request.description.strip()}"
         prompt_template = f"""
         {DescriptionService.SYSTEM_PROMPT}
-        
-        
         Product Information:
         - Description: {description}
         - Seller: {seller_persona}
