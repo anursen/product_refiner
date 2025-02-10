@@ -1,6 +1,6 @@
-# Product Description Refiner API
+# Product Refiner API
 
-A FastAPI-based service that refines product descriptions using AI language models and OpenAI's GPT-4.
+This API refines product descriptions using an LLM.
 
 ## Features
 
@@ -47,7 +47,7 @@ OPENAI_API_KEY=your-api-key-here
 
 1. Start the server:
 ```bash
-python run.py
+uvicorn app.main:app --reload
 ```
 
 2. The API will be available at `http://127.0.0.1:8000`
@@ -67,9 +67,25 @@ curl -X POST "http://127.0.0.1:8000/refine/" \
 
 ## API Documentation
 
-### POST /refine/
+### GET /
+Returns a welcome message.
 
-Refines a product description and generates a title.
+### POST /refine
+Refines a product description. 
+
+**Required:**
+- `description`: The original description to refine.
+
+**Optional (defaults applied if omitted):**
+- `seller_address`: Defaults to `"Somerset, NJ"`.
+- `temperature`: Defaults to `0.7`.
+- `custom_prompt`: Defaults to `"Write a friendly product description:"`.
+- `custom_model`: Defaults to `"gpt-4o-mini"`.
+
+Other optional fields include `seller_persona`, `item_condition`, and `similar_products`.
+
+### GET /ui
+Renders an HTML UI for adjusting the prompt, model name, and default values.
 
 **Request Body Schema:**
 ```json
@@ -106,6 +122,14 @@ The API includes comprehensive error handling for:
 - Missing API keys
 - LLM service interruptions
 - Rate limiting
+
+## Testing
+
+- Use the tests in the `tests/` directory.
+- Example:
+  ```
+  python -m pytest tests/
+  ```
 
 ## License
 
